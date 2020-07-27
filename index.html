@@ -1,0 +1,127 @@
+<html>
+<meta charset="UTF-8">
+<head>
+	<style>
+		* {
+			box-sizing: border-box;
+			font-family: monospace;
+		}
+
+		html, body {
+			width: 100%;
+			height: 100%;
+			margin: 0;
+			padding: 0;
+		}
+
+		body {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+
+		#error {
+			color: red;
+			font-size: 16px;
+		}
+
+		button {
+			line-height: 48px;
+			font-size: 36px;
+			padding: 16px 24px;
+		}
+
+		div#comrade {
+			font-size: 144px;
+			font-weight: bold;
+			color: white
+		}
+
+		ol#result {
+			font-size: 72px;
+		}
+	</style>
+</head>
+<body>
+<div id="error" style="display: none;">
+	Укажите участников в url, например так <a href="github.com?participants=Вася,Петя,Катя">github.com?participants=Вася,Петя,Катя</a>
+</div>
+<button type="button" id="retroButton" style="display: none;">Кто будет проводить следующее ретро? 🤔🤔🤔</button>
+<div id="comrade" style="display: none;">...</div>
+<ol id="result" style="display: none;"></ol>
+<script>
+  const getRandomIndex = (arr) => Math.floor(Math.random() * arr.length)
+  const getRandomColor = () => {
+    const colors = ['blueviolet', 'lightcoral', 'crimson', 'indigo', 'steelblue', 'orchid', 'dimgrey']
+    return colors[getRandomIndex(colors)]
+  }
+
+  const readParticipantsFromUrl = () => {
+    const participantsParam = new URL(document.location).searchParams.get('participants')
+    if (participantsParam) {
+      return participantsParam.split(',')
+    }
+    return null
+  }
+
+  const bodyElement = document.body
+  const errorElement = document.getElementById('error')
+  const buttonElement = document.getElementById('retroButton')
+  const comradeElement = document.getElementById('comrade')
+  const resultElement = document.getElementById('result')
+
+  const renderError = () => {
+    errorElement.style.display = 'block'
+  }
+
+  const renderButton = () => {
+    buttonElement.style.display = 'block'
+  }
+
+  const renderComrade = (comrade) => {
+    comradeElement.style.display = 'block'
+    comradeElement.innerText = comrade
+    bodyElement.style.background = getRandomColor()
+  }
+
+  const renderResult = (result) => {
+    bodyElement.style.background = 'none'
+    comradeElement.style.display = 'none'
+    resultElement.style.display = 'block'
+    resultElement.innerHTML = result.map(item => `<li>${ item }</li>`).join('')
+  }
+
+
+  const comrades = readParticipantsFromUrl()
+
+  if (!comrades) {
+    renderError()
+  } else {
+    renderButton()
+
+    buttonElement.addEventListener('click', () => {
+      buttonElement.style.display = 'none'
+      comradeElement.style.display = 'block'
+
+      const result = []
+      const takeRandomComrade = () => {
+        setTimeout(() => {
+          const randomIndex = getRandomIndex(comrades)
+          const randomComrade = comrades.splice(randomIndex, 1)[0]
+          renderComrade(randomComrade)
+          result.push(randomComrade)
+          if (comrades.length) {
+            takeRandomComrade()
+          } else {
+            setTimeout(() => {
+              renderResult(result)
+            }, 1000)
+          }
+        }, 1000)
+      }
+      takeRandomComrade()
+    })
+  }
+</script>
+</body>
+</html>
